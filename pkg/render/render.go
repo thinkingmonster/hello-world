@@ -4,20 +4,35 @@ import (
 	"bytes"
 	"html/template"
 	"log"
+	"myapp/pkg/config"
 	"net/http"
 	"path/filepath"
 )
 
+var app *config.AppConfig
+
+// NewTemplate sets the config for the template package
+func NewTemplate(a *config.AppConfig) {
+	app = a
+}
+
 func RenderTemplate(w http.ResponseWriter, tmpl string) {
+	var tc map[string]*template.Template
 	// Create a template cache
-	tc, err := createTemplateCache()
-	if err != nil {
-		log.Fatal(err)
+	//tc, err := CreateTemplateCache()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	if app.UseCache {
+		tc = app.TemplateCache
+	} else {
+		tc, _ = CreateTemplateCache()
 	}
+
 	// get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("Could not get template from template")
 	}
 	// render the template this is one way of doing the thing, we can use a  buffer for more fine-grained  control
 	//err = t.Execute(w, nil)
@@ -26,7 +41,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 	//	return
 	//}
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
+	err := t.Execute(buf, nil)
 	if err != nil {
 		log.Println(err)
 	}
@@ -37,7 +52,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 	}
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
 	// get all the files names *.page.tmpl from ./templates
