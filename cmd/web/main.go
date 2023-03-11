@@ -23,8 +23,14 @@ func main() {
 	handlers.NewHandlers(repo)
 	render.NewTemplate(&app)
 
-	http.HandleFunc("/", handlers.Repo.Home)
-	http.HandleFunc("/about", handlers.Repo.About)
+	//http.HandleFunc("/", handlers.Repo.Home)
+	//http.HandleFunc("/about", handlers.Repo.About)
+	srv := http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app),
+	}
 	fmt.Printf("Strating server on port %s", portNumber)
-	_ = http.ListenAndServe(portNumber, nil)
+	//_ = http.ListenAndServe(portNumber, nil)
+	err = srv.ListenAndServe()
+	log.Fatal(err)
 }
